@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Melacak Lokasi</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #maptarget {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h2>Melacak Lokasi Anda...</h2>
+    <p>
+        <span id="latitude"></span><br>
+        <span id="longitude"></span>
+    </p>
+    <div id="maptarget"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const targetURL = decodeURIComponent(params.get("to"));
+
+        if (!targetURL) {
+            document.body.innerHTML = "<p>Link tujuan tidak ditemukan.</p>";
+            throw new Error("No target URL.");
+        }
+
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const long = position.coords.longitude;
+
+            document.getElementById('latitude').textContent = "Latitude: " + lat;
+            document.getElementById('longitude').textContent = "Longitude: " + long;
+
+            const map = L.map('maptarget').setView([lat, long], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            L.marker([lat, long]).addTo(map)
+                .bindPopup('Anda berada di sini!')
+                .openPopup();
+
+            // Redirect setelah 5 detik
+            setTimeout(() => {
+                window.location.href = targetURL;
+            }, 5000);
+        }, function(error) {
+            alert("Gagal mendapatkan lokasi, tetap melanjutkan ke link.");
+            window.location.href = targetURL;
+        });
+    </script>
+</body>
+</html>
